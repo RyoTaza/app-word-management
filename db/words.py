@@ -12,6 +12,7 @@ class Words(Base):
     __tablename__ = 'words'
     id = Column('id', Integer, primary_key=True)
     word = Column('word', String(200), unique=True)
+    japanese = Column('japanese', String(200))
     created = Column('created', DateTime,
                      default=datetime.now, nullable=False)
     modified = Column('modified', DateTime,
