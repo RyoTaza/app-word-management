@@ -1,6 +1,4 @@
-import csv
 import sys
-import os
 import requests
 from bs4 import BeautifulSoup
 # sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/db')
@@ -20,18 +18,13 @@ class RegWordInfo(object):
             print("単語は1語を指定するか、2語以上の場合はダブルクォートで指定してください")
             sys.exit(1)
 
+        self.word = None
         self.tgt_word = args[1]
         self.db_client = DbClient()
 
-    def insert_word(self, tgt_word):
+    def insert_word(self, tgt_word, word_meaning):
         """Insert a input word into a table"""
-        self.db_client.insert_word(tgt_word)
-
-    def add_word_to_csv_file(self, word_meaning):
-        """Add a input word to a csv file"""
-        with open('./csv_files/some.csv', 'a') as f:
-            writer = csv.writer(f, lineterminator='\n')
-            writer.writerow(word_meaning)
+        self.db_client.insert_word(tgt_word, word_meaning)
 
     def search_meaning(self, tgt_word):
         """Search the meaning of the input word"""
@@ -61,15 +54,6 @@ class RegWordInfo(object):
         return word_meaning
 
     def main(self):
-        # Insert a input word to db table
-        try:
-            self.insert_word(self.tgt_word)
-        # TODO: IntegrityErrorをキャッチできるようにすること
-        # ちなみに、pymysqlはalready installed
-        except Exception as e:
-            print("Unknow error occured. Reffer to below")
-            print(e)
-            sys.exit(1)
 
         # Serch the meaning of a input word
         word_meaning = self.search_meaning(self.tgt_word)
@@ -77,9 +61,13 @@ class RegWordInfo(object):
             print("入力された英単語は存在しません")
             sys.exit(1)
 
-        # Add a input word and the meaning to a csv file
-        # TODO: ここを100語いったらファイル名を変えて、新しくCSVファイルを作成するとかにしたい
-        self.add_word_to_csv_file(word_meaning)
+        # Insert a input word to db table
+        try:
+            self.word = self.insert_word(self.tgt_word, word_meaning[1])
+        except Exception as e:
+            print("Unknow error occured. Reffer to below")
+            print(e)
+            sys.exit(1)
 
 
 if __name__ == "__main__":
