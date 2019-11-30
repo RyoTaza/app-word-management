@@ -11,7 +11,7 @@ class Words(Base):
     """
     __tablename__ = 'words'
     id = Column('id', Integer, primary_key=True)
-    word = Column('word', String(200))
+    word = Column('word', String(200), unique=True)
     created = Column('created', DateTime,
                      default=datetime.now, nullable=False)
     modified = Column('modified', DateTime,
@@ -27,4 +27,5 @@ def main(args):
 
 
 if __name__ == "__main__":
+    # setting.pyの情報を元に、DBにテーブルを作成する
     main(sys.argv)

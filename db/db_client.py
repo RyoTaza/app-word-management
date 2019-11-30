@@ -1,6 +1,6 @@
 # セッション変数の取得
-from words import Words
-from setting import session
+from db.words import Words
+from db.setting import session
 
 
 class DbClient(object):
