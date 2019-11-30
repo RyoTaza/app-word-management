@@ -27,4 +27,5 @@ def main(args):
 
 
 if __name__ == "__main__":
+    # setting.pyの情報を元に、DBにテーブルを作成する
     main(sys.argv)

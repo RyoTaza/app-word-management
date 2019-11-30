@@ -3,14 +3,13 @@ import sys
 import os
 import requests
 from bs4 import BeautifulSoup
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/db')
-from db_client import DbClient
+# sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/db')
+from db.db_client import DbClient
 
 
 class RegWordInfo(object):
     """
     引数の英単語をDBに格納し、CSVファイルに追記する
-    CSVファイルは100個ごとで分けるため、単語が100個
     記載されていたら、新しいファイルを作成する
     """
 
@@ -36,7 +35,6 @@ class RegWordInfo(object):
 
     def search_meaning(self, tgt_word):
         """Search the meaning of the input word"""
-
         # Create url for research
         TGT_URL = "https://ejje.weblio.jp/content/"
         TGT_URL = TGT_URL + tgt_word
@@ -64,15 +62,23 @@ class RegWordInfo(object):
 
     def main(self):
         # Insert a input word to db table
-        # self.insert_word(self.tgt_word)
+        try:
+            self.insert_word(self.tgt_word)
+        # TODO: IntegrityErrorをキャッチできるようにすること
+        # ちなみに、pymysqlはalready installed
+        except Exception as e:
+            print("Unknow error occured. Reffer to below")
+            print(e)
+            sys.exit(1)
 
         # Serch the meaning of a input word
         word_meaning = self.search_meaning(self.tgt_word)
         if not word_meaning:
             print("入力された英単語は存在しません")
-            sys.exit()
+            sys.exit(1)
 
         # Add a input word and the meaning to a csv file
+        # TODO: ここを100語いったらファイル名を変えて、新しくCSVファイルを作成するとかにしたい
         self.add_word_to_csv_file(word_meaning)
 
 
