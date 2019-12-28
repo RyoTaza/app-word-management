@@ -24,7 +24,11 @@ class RegWordInfo(object):
 
     def insert_word(self, tgt_word, word_meaning):
         """Insert a input word into a table"""
-        self.db_client.insert_word(tgt_word, word_meaning)
+        try:
+            self.db_client.insert_word(tgt_word, word_meaning)
+        except Exception as e:
+            print(e)
+            print("DBエラーが発生しました")
 
     def search_meaning(self, tgt_word):
         """Search the meaning of the input word"""
@@ -57,6 +61,11 @@ class RegWordInfo(object):
 
         # Serch the meaning of a input word
         word_meaning = self.search_meaning(self.tgt_word)
+
+        print("登録された英単語")
+        print("単語: %s" % word_meaning[0])
+        print("意味: %s" % word_meaning[1])
+
         if not word_meaning:
             print("入力された英単語は存在しません")
             sys.exit(1)

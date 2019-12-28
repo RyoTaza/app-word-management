@@ -1,7 +1,7 @@
 import sys
-import requests
+# import requests
 import csv
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
 from db.db_client import DbClient
 
 
@@ -15,8 +15,15 @@ class OutputCsv(object):
         self.all_words = None
 
     def get_all_words(self):
-        """Insert a input word into a table"""
-        return self.db_client.get_all_words()
+        """
+        Insert a input word into a table
+        """
+        try:
+            all_words = self.db_client.get_all_words()
+            return all_words
+        except Exception as e:
+            print("DBエラーが発生しました")
+            print(e)
 
     def create_words_list(self, words_obj_list):
         """
@@ -30,7 +37,6 @@ class OutputCsv(object):
 
     def main(self):
         try:
-            # 全取得
             self.all_words = self.get_all_words()
             if not self.all_words:
                 print("取得する単語がありません")
