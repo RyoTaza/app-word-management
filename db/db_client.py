@@ -22,5 +22,11 @@ class DbClient(object):
             session.close()
 
     def get_all_words(self):
-        words = session.query(Words).all()
-        return words
+        try:
+            words = session.query(Words).all()
+            return words
+        except Exception:
+            session.rollback()
+            raise Exception()
+        finally:
+            session.close()
