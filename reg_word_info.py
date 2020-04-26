@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 # sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/db')
 from db.db_client import DbClient
 import csv
+import configparser
 
 
 class RegWordInfo(object):
@@ -14,13 +15,26 @@ class RegWordInfo(object):
 
     def __init__(self):
 
+        # Read config file
+        self.config_init = configparser.ConfigParser()
+        self.config_init.read('config/config.init')
+
+        # Create url for research
+        self.tgt_url = self.config_init['INFO']['URL']
+
+        # Get csv file of unknown words
+        self.unknown_words_file = self.config_init['INFO']['FILE']
         self.unknown_words = None
-        with open('./csv_files/unknown_words.csv') as f:
+
+        # Get no_existing_words.csv
+        self.no_exist_words_file = self.config_init['INFO']['NO_EXISTING_FILE']
+
+        # Read unknown words
+        with open('./csv_files/' + self.unknown_words_file) as f:
             reader = csv.reader(f)
             self.unknown_words = [row[0] for row in reader]
 
         self.word = None
-        # self.tgt_word = args[1]
         self.db_client = DbClient()
         self.alre_reg_words = []
         self.no_exist_words = []
@@ -45,12 +59,11 @@ class RegWordInfo(object):
 
     def search_meaning(self, tgt_word):
         """Search the meaning of the input word"""
-        # Create url for research
-        TGT_URL = "https://ejje.weblio.jp/content/"
-        TGT_URL = TGT_URL + tgt_word
 
+        search_url = None
+        search_url = self.tgt_url + tgt_word
         # Get content through the URL
-        res = requests.get(TGT_URL)
+        res = requests.get(search_url)
 
         # 要素を抽出 r.contentはHTMLの内容
         soup = BeautifulSoup(res.content,
@@ -90,6 +103,7 @@ class RegWordInfo(object):
             if tgt_word in all_db_words:
                 continue
 
+            print(tgt_word)
             word_meaning = self.search_meaning(tgt_word)
 
             if not word_meaning:
@@ -116,7 +130,16 @@ class RegWordInfo(object):
         if len(self.reg_words):
             print(self.reg_words)
         print("不明な単語数: %d" % len(self.no_exist_words))
+
+        # TODO: 重複を省きたい
+
+        # 調べてもわからなかった単語を書き込む
         if len(self.no_exist_words):
+            with open('./csv_files/' + self.no_exist_words_file, 'a') as f:
+                # 1次元のリストの書き込み
+                # https://qiita.com/elecho1/items/3bc56ca55a600c2e2abc
+                self.no_exist_words = '\n'.join(self.no_exist_words) + '\n'
+                f.write(self.no_exist_words)
             print(self.no_exist_words)
 
 
