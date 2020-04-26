@@ -1,8 +1,10 @@
+import sys
 import requests
 from bs4 import BeautifulSoup
 # sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/db')
 from db.db_client import DbClient
 import csv
+import configparser
 
 
 class RegWordInfo(object):
@@ -13,17 +15,31 @@ class RegWordInfo(object):
 
     def __init__(self):
 
+        # Read config file
+        self.config_init = configparser.ConfigParser()
+        self.config_init.read('config/config.init')
+
+        # Create url for research
+        self.tgt_url = self.config_init['INFO']['URL']
+
+        # Get csv file of unknown words
+        self.unknown_words_file = self.config_init['INFO']['FILE']
         self.unknown_words = None
-        with open('./csv_files/unknown_words.csv') as f:
+
+        # Get no_existing_words.csv
+        self.no_exist_words_file = self.config_init['INFO']['NO_EXISTING_FILE']
+
+        # Read unknown words
+        with open('./csv_files/' + self.unknown_words_file) as f:
             reader = csv.reader(f)
             self.unknown_words = [row[0] for row in reader]
 
         self.word = None
-        # self.tgt_word = args[1]
         self.db_client = DbClient()
         self.alre_reg_words = []
         self.no_exist_words = []
         self.reg_words = []
+        self.tgt_words = []
         self.total_num = 0
 
     def insert_word(self, tgt_word, word_meaning):
@@ -33,14 +49,21 @@ class RegWordInfo(object):
         except Exception:
             raise Exception()
 
+    def get_words(self):
+        """Get all words in DB"""
+        try:
+            db_words = self.db_client.get_all_words()
+            return db_words
+        except Exception:
+            raise Exception()
+
     def search_meaning(self, tgt_word):
         """Search the meaning of the input word"""
-        # Create url for research
-        TGT_URL = "https://ejje.weblio.jp/content/"
-        TGT_URL = TGT_URL + tgt_word
 
+        search_url = None
+        search_url = self.tgt_url + tgt_word
         # Get content through the URL
-        res = requests.get(TGT_URL)
+        res = requests.get(search_url)
 
         # 要素を抽出 r.contentはHTMLの内容
         soup = BeautifulSoup(res.content,
@@ -64,10 +87,24 @@ class RegWordInfo(object):
 
         self.total_num = len(self.unknown_words)
 
+        # 登録済みの単語を全て取得
+        all_db_words = []
+        try:
+            all_db_words = self.get_words()
+            # wordsオブジェクトのwordプロパティのみ取得
+            all_db_words = list(map(lambda x: x.word, all_db_words))
+        except Exception:
+            print("DBから単語を取得する際にエラーが発生しました")
+            sys.exit()
+
         # Serch the meaning of a input word
         for tgt_word in self.unknown_words:
+            # 登録済みの単語であれば調べない
+            if tgt_word in all_db_words:
+                continue
+
+            print(tgt_word)
             word_meaning = self.search_meaning(tgt_word)
-            # print("%s の登録開始" % tgt_word)
 
             if not word_meaning:
                 print("入力された英単語は存在しません")
@@ -89,10 +126,21 @@ class RegWordInfo(object):
         print("")
         print("")
         print("単語総数: %d" % self.total_num)
-        print("登録された単語数: %d" % len(self.reg_words))
-        print(self.reg_words)
+        print("新たに登録された単語数: %d" % len(self.reg_words))
+        if len(self.reg_words):
+            print(self.reg_words)
         print("不明な単語数: %d" % len(self.no_exist_words))
-        print(self.no_exist_words)
+
+        # TODO: 重複を省きたい
+
+        # 調べてもわからなかった単語を書き込む
+        if len(self.no_exist_words):
+            with open('./csv_files/' + self.no_exist_words_file, 'a') as f:
+                # 1次元のリストの書き込み
+                # https://qiita.com/elecho1/items/3bc56ca55a600c2e2abc
+                self.no_exist_words = '\n'.join(self.no_exist_words) + '\n'
+                f.write(self.no_exist_words)
+            print(self.no_exist_words)
 
 
 if __name__ == "__main__":
