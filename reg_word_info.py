@@ -29,6 +29,12 @@ class RegWordInfo(object):
         # Get no_existing_words.csv
         self.no_exist_words_file = self.config_init['INFO']['NO_EXISTING_FILE']
 
+        self.drop_duplicate = []
+        # For drop duplicate
+        with open('./csv_files/' + self.no_exist_words_file) as f:
+            reader = csv.reader(f)
+            self.drop_duplicate = [row[0] for row in reader]
+
         # Read unknown words
         with open('./csv_files/' + self.unknown_words_file) as f:
             reader = csv.reader(f)
@@ -36,8 +42,8 @@ class RegWordInfo(object):
 
         self.word = None
         self.db_client = DbClient()
-        self.alre_reg_words = []
         self.no_exist_words = []
+        self.alre_reg_words = []
         self.reg_words = []
         self.tgt_words = []
         self.total_num = 0
@@ -135,12 +141,18 @@ class RegWordInfo(object):
 
         # 調べてもわからなかった単語を書き込む
         if len(self.no_exist_words):
-            with open('./csv_files/' + self.no_exist_words_file, 'a') as f:
-                # 1次元のリストの書き込み
-                # https://qiita.com/elecho1/items/3bc56ca55a600c2e2abc
-                self.no_exist_words = '\n'.join(self.no_exist_words) + '\n'
-                f.write(self.no_exist_words)
-            print(self.no_exist_words)
+            print(self.drop_duplicate)
+            # すでに検索不可として記録されたデータとの差分をとる
+            self.drop_duplicate = list(set(self.no_exist_words) - set(self.drop_duplicate))
+
+            if self.drop_duplicate:
+                # 検索不可の単語をファイルへ記載
+                with open('./csv_files/' + self.no_exist_words_file, 'a') as f:
+                    # 1次元のリストの書き込み
+                    # https://qiita.com/elecho1/items/3bc56ca55a600c2e2abc
+                    self.drop_duplicate = '\n'.join(self.drop_duplicate) + '\n'
+                    f.write(self.drop_duplicate)
+            print(self.drop_duplicate)
 
 
 if __name__ == "__main__":
