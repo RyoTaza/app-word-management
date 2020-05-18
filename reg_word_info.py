@@ -146,7 +146,7 @@ class RegWordInfo(object):
             self.drop_duplicate = list(set(self.no_exist_words) - set(self.drop_duplicate))
 
             if self.drop_duplicate:
-                # 検索不可の単語をファイルへ記載
+                # 検索不可の単語をファイルへ記載()
                 with open('./csv_files/' + self.no_exist_words_file, 'a') as f:
                     # 1次元のリストの書き込み
                     # https://qiita.com/elecho1/items/3bc56ca55a600c2e2abc
