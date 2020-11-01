@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from db.db_client import DbClient
 import csv
 import configparser
+import time
 
 
 class RegWordInfo(object):
@@ -109,6 +110,10 @@ class RegWordInfo(object):
             if tgt_word in all_db_words:
                 continue
 
+            # スクレイピング対策のブロック対策
+            # 間髪入れずにアクセスすると一時的にアクセス拒否されるっぽい
+            time.sleep(0.5)
+
             print(tgt_word)
             word_meaning = self.search_meaning(tgt_word)
 
@@ -135,9 +140,7 @@ class RegWordInfo(object):
         print("新たに登録された単語数: %d" % len(self.reg_words))
         if len(self.reg_words):
             print(self.reg_words)
-        print("不明な単語数: %d" % len(self.no_exist_words))
-
-        # TODO: 重複を省きたい
+        print("不明な単語数:")
 
         # 調べてもわからなかった単語を書き込む
         if len(self.no_exist_words):
