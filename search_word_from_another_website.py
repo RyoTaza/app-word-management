@@ -10,22 +10,17 @@ import time
 
 class RegWordInfo(object):
     """
-    引数の英単語をDBに格納し、CSVファイルに追記する
-    記載されていたら、新しいファイルを作成する
+    weblioで取得できなかった単語を
+    https://eow.alc.co.jp/
+    で取得できるかをテストするクラス
     """
 
     def __init__(self):
 
-        # Read config file
-        self.config_init = configparser.ConfigParser()
-        self.config_init.read('config/config.init')
-
         # Create url for research
-        self.tgt_url = self.config_init['INFO']['URL']
+        self.tgt_url = 'https://eow.alc.co.jp/search?q='
 
-        # Get csv file of unknown words
-        self.unknown_words_file = self.config_init['INFO']['FILE']
-        self.unknown_words = None
+        self.unknown_words = ['']
 
         # Get no_existing_words.csv
         self.no_exist_words_file = self.config_init['INFO']['NO_EXISTING_FILE']
@@ -67,10 +62,6 @@ class RegWordInfo(object):
     def search_meaning(self, tgt_word):
         """Search the meaning of the input word"""
 
-        # サイト上のルールに従う 例 in tribute toの単語を調べる時
-        # https://ejje.weblio.jp/content/in+tribute+to
-        tgt_word = tgt_word.replace(" ", "+")
-
         search_url = None
         search_url = self.tgt_url + tgt_word
         # Get content through the URL
@@ -96,7 +87,6 @@ class RegWordInfo(object):
 
     def main(self):
 
-        # 単語の総数
         self.total_num = len(self.unknown_words)
 
         # 登録済みの単語を全て取得
@@ -151,11 +141,10 @@ class RegWordInfo(object):
         if len(self.no_exist_words):
             print(self.drop_duplicate)
             # すでに検索不可として記録されたデータとの差分をとる
-            self.drop_duplicate = list(
-                set(self.no_exist_words) - set(self.drop_duplicate))
+            self.drop_duplicate = list(set(self.no_exist_words) - set(self.drop_duplicate))
 
             if self.drop_duplicate:
-                # 検索不可の単語をファイルへ追加
+                # 検索不可の単語をファイルへ記載()
                 with open('./csv_files/' + self.no_exist_words_file, 'a') as f:
                     # 1次元のリストの書き込み
                     # https://qiita.com/elecho1/items/3bc56ca55a600c2e2abc
