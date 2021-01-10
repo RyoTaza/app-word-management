@@ -46,7 +46,8 @@ class OutputCsv(object):
             print(e)
             sys.exit(1)
 
-        # CSV出力ように２次元配列を作成する
+        # DBから取得されたデータはオブジェクトなので、英単語と意味の配列が格納された
+        # 配列を作成する（入れ子）
         words_list = self.create_words_list(self.all_words)
 
         # wordsテーブルの単語をCSV出力する

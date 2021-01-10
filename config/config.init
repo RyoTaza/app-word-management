@@ -1,4 +1,4 @@
 [INFO]
 URL = https://ejje.weblio.jp/content/
-FILE = TOEIC_SEISEN_MOSHI_3.csv
+FILE = YBM_test1.csv
 NO_EXISTING_FILE = no_existing_words.csv
